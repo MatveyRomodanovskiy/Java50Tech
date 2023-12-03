@@ -15,8 +15,9 @@ public class Xtest {
 		System.out.println("test 1");
 	}
 	
-	int sum(int s1, int s2) {
-		return s1 + s2;
+	@BeforeEach
+	void f3 (){
+		System.out.println("Before each2");
 	}
 	
 	int substract (int s1, int s2) {
