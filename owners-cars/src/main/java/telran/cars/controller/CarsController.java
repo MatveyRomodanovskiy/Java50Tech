@@ -28,7 +28,6 @@ public class CarsController {
 	}
 	@PutMapping("trade")
 	TradeDealDto purchase(@RequestBody TradeDealDto tradeDealDto) {
-		//TODO HW #53
 		return carsService.purchase(tradeDealDto);
 	}
 	@DeleteMapping("person/{id}")
@@ -37,7 +36,6 @@ public class CarsController {
 	}
 	@DeleteMapping("{carNumber}")
 	CarDto deleteCar(@PathVariable(name="carNumber") String carNumber) {
-		//TODO HW #53
 		return carsService.deleteCar(carNumber);
 		
 	}
