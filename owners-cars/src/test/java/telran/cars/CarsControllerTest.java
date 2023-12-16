@@ -164,7 +164,7 @@ class CarsControllerTest {
 	}
 	
 	@Test
-	void testAddPersonAlreadyExists() throws Exception {
+	void testAddPersonAlreadyExists() throws Exception{
 		when(carsService.addPerson(personDto)).thenThrow(new IllegalStateException(PERSON_ALREADY_EXISTS_MESSAGE));
 		String jsonPersonDto = mapper.writeValueAsString(personDto);
 		String actualJson = mockMvc.perform(post(BASE_URL + "/person").contentType(MediaType.APPLICATION_JSON)
