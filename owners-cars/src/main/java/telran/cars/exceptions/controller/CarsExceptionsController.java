@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import telran.cars.exceptions.NotFoundException;
 
-@ControllerAdvice
+//@ControllerAdvice
 public class CarsExceptionsController {
 
 	

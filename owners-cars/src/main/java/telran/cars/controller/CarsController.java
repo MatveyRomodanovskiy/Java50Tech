@@ -2,7 +2,10 @@ package telran.cars.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.server.handler.ResponseStatusExceptionHandler;
 
 import lombok.RequiredArgsConstructor;
 import telran.cars.service.CarsService;
@@ -32,7 +35,11 @@ public class CarsController {
 	}
 	@DeleteMapping("person/{id}")
 	PersonDto deletePerson(@PathVariable(name="id") long id) {
-		return carsService.deletePerson(id);
+		try {
+			return carsService.deletePerson(id);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "person not found message", null);
+		}
 	}
 	@DeleteMapping("{carNumber}")
 	CarDto deleteCar(@PathVariable(name="carNumber") String carNumber) {
