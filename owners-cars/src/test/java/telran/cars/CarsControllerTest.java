@@ -44,7 +44,7 @@ class CarsControllerTest {
 	@Autowired
 	ObjectMapper mapper;
 	PersonDto personDto = new PersonDto(PERSON_ID, "ts", "01-01-1970", "s@s.s");
-	PersonDto personDtoUpdated = new PersonDto(1000000, "ts", "01-01-1970", "s@gmail.s");
+	PersonDto personDtoUpdated = new PersonDto(1000000l, "ts", "01-01-1970", "s@gmail.s");
 	PersonDto personWrongEmail = new PersonDto(PERSON_ID, "ts", "01-01-1970", "s@gmail.s");
 	TradeDealDto dealDto = new TradeDealDto("number", 123l);
 	List<CarDto> listCarDtos = new ArrayList<CarDto>();
