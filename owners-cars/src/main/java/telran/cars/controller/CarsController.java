@@ -35,11 +35,12 @@ public class CarsController {
 	}
 	@DeleteMapping("person/{id}")
 	PersonDto deletePerson(@PathVariable(name="id") long id) {
-		try {
-			return carsService.deletePerson(id);
-		} catch (Exception e) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "person not found message", null);
-		}
+//		try {
+//			return carsService.deletePerson(id);
+//		} catch (Exception e) {
+//			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "person not found message", null);
+//		}
+		return carsService.deletePerson(id);
 	}
 	@DeleteMapping("{carNumber}")
 	CarDto deleteCar(@PathVariable(name="carNumber") String carNumber) {
