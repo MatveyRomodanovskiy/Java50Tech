@@ -132,7 +132,8 @@ class CarsControllerTest {
 	void testDeleteNotFoundPerson() throws Exception {
 		when(carsService.deletePerson(PERSON_ID)).thenThrow(new NotFoundException(PERSON_NOT_FOUND_MESSAGE));
 		String actualJson = mockMvc.perform(delete(BASE_URL + "/person/" + PERSON_ID)).andExpect(status().isNotFound()).andReturn().getResponse()
-				.getErrorMessage();
+				.getContentAsString();
+//				.getErrorMessage();
 		assertEquals(PERSON_NOT_FOUND_MESSAGE, actualJson);
 	}
 	
