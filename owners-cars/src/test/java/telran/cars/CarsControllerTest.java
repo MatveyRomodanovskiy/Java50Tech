@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import static telran.cars.api.ValidationConstants.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import telran.cars.dto.CarDto;
@@ -29,13 +31,16 @@ import telran.cars.service.CarsService;
 
 @WebMvcTest
 class CarsControllerTest {
-	private static final long PERSON_ID = 1l;
-	private static final String CAR_NUMBER = "car_number";
+	private static final long PERSON_ID = 1234567l;
+	private static final String CAR_NUMBER = "123-00-001";
 	private static final String PERSON_NOT_FOUND_MESSAGE = "person not found message";
 	private static final String CAR_NOT_FOUND_MESSAGE = "car not found message";
 	private static final String CAR_ALREADY_EXISTS_MESSAGE = "car already exists message";
 	private static final String PERSON_ALREADY_EXISTS_MESSAGE = "person already exists message";
 	private static final String BASE_URL = "http://localhost:8080/cars";
+	private static final long WRONG_PERSON_ID = 1l;
+	private static final long WRONG_PERSON_MAX_ID = 1000_000_000_000l;
+	private static final String WRONG_CAR_NUMBER = "wrong";
 	@MockBean
 	CarsService carsService;
 	@Autowired
@@ -43,10 +48,11 @@ class CarsControllerTest {
 	CarDto carDto = new CarDto(CAR_NUMBER, "Model");
 	@Autowired
 	ObjectMapper mapper;
-	PersonDto personDto = new PersonDto(PERSON_ID, "ts", "01-01-1970", "s@s.s");
-	PersonDto personDtoUpdated = new PersonDto(1000000l, "ts", "01-01-1970", "s@gmail.s");
-	PersonDto personWrongEmail = new PersonDto(PERSON_ID, "ts", "01-01-1970", "s@gmail.s");
-	TradeDealDto dealDto = new TradeDealDto("number", 123l);
+	PersonDto personDto = new PersonDto(PERSON_ID, "ts", "1970-01-11", "s@sm.se");
+	PersonDto testPersonDto = new PersonDto(1234566l, "PersonName", "1970-11-11", "serega@gmail.com");
+	PersonDto personDtoUpdated = new PersonDto(10000000l, "ts", "1970-01-11", "s@gmail.com");
+	PersonDto personWrongEmail = new PersonDto(PERSON_ID, "ts", "1970-01-11", "s@gmail.");
+	TradeDealDto dealDto = new TradeDealDto(CAR_NUMBER, 123456l);
 	List<CarDto> listCarDtos = new ArrayList<CarDto>();
 	
 	
@@ -62,8 +68,8 @@ class CarsControllerTest {
 
 	@Test
 	void testAddPerson() throws Exception {
-		when(carsService.addPerson(personDto)).thenReturn(personDto);
-		String jsonPersonDto = mapper.writeValueAsString(personDto);
+		when(carsService.addPerson(testPersonDto)).thenReturn(testPersonDto);
+		String jsonPersonDto = mapper.writeValueAsString(testPersonDto);
 		String actualJson = mockMvc.perform(post(BASE_URL + "/person").contentType(MediaType.APPLICATION_JSON)
 				.content(jsonPersonDto)).andExpect(status().isOk()).andReturn().getResponse()
 				.getContentAsString();
@@ -128,6 +134,9 @@ class CarsControllerTest {
 		assertEquals(jsonPersonDto,actualJson);
 	}
 	
+	/*
+	 * Alternative flows - service Exception
+	 */
 	@Test
 	void testDeleteNotFoundPerson() throws Exception {
 		when(carsService.deletePerson(PERSON_ID)).thenThrow(new NotFoundException(PERSON_NOT_FOUND_MESSAGE));
@@ -174,4 +183,37 @@ class CarsControllerTest {
 		assertEquals(PERSON_ALREADY_EXISTS_MESSAGE, actualJson);
 	}
 	
+	/*
+	 * Alternative flows - validation
+	 */
+	
+	@Test
+	void addPersonWrongEmailTest() throws Exception {
+		String jsonPersonDto = mapper.writeValueAsString(personWrongEmail);
+		String actualJson = mockMvc.perform(post(BASE_URL + "/person").contentType(MediaType.APPLICATION_JSON)
+				.content(jsonPersonDto)).andExpect(status().isBadRequest()).andReturn().getResponse()
+				.getContentAsString();
+		assertEquals(WRONG_EMAIL, actualJson);
+	}
+	
+	@Test
+	void deletePersonWrongMinIDTest() throws Exception {
+		String actualJson = mockMvc.perform(delete(BASE_URL + "/person/" + WRONG_PERSON_ID)).andExpect(status().isBadRequest()).andReturn().getResponse()
+				.getContentAsString();
+		assertEquals(WRONG_ID_NUMBER_MIN, actualJson);
+	}
+	
+	void deletePersonWrongMaxIDTest() throws Exception {
+		String actualJson = mockMvc.perform(delete(BASE_URL + "/person/" + WRONG_PERSON_MAX_ID)).andExpect(status().isBadRequest()).andReturn().getResponse()
+				.getContentAsString();
+		assertEquals(WRONG_ID_NUMBER_MAX, actualJson);
+	}
+	
+	
+	@Test
+	void deleteCarNumberWrongIDTest() throws Exception {
+		String actualJsonString = mockMvc.perform(delete(BASE_URL  + "/" +  WRONG_CAR_NUMBER)).andExpect(status().isBadRequest()).andReturn().getResponse()
+				.getContentAsString();
+		assertEquals(WRONG_NUMBER_MESSAGE,actualJsonString);
+	}
 }
