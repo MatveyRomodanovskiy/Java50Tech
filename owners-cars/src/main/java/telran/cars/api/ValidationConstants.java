@@ -5,6 +5,7 @@ public interface ValidationConstants {
 	String CAR_NUMBER_REGEXP = "(\\d{3}-\\d{2}-\\d{3})|(\\d{2}-\\d{3}-\\d{2})";
 	String WRONG_NUMBER_MESSAGE = "Incorrect car number";
 	String MISSING_CAR_MODEL_MESSAGE = "Missing car model message";
+	String PERSON_WRONG_ID = "Person wrong ID message";
 	String MISSING_PERSON_ID = "Missing person ID";
 	String WRONG_ID_NUMBER_MIN = "ID less than min";
 	long MIN_PERSON_ID_NUMBER = 100000l;

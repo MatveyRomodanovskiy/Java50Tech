@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import static telran.cars.api.ValidationConstants.*;
 
@@ -20,14 +20,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import telran.cars.dto.CarDto;
 import telran.cars.dto.PersonDto;
 import telran.cars.dto.TradeDealDto;
-import telran.cars.exceptions.NotFoundException;
+import telran.cars.exceptions.*;
+import telran.cars.exceptions.controller.CarsExceptionsController;
 import telran.cars.service.CarsService;
+
+record PersonDtoIdString(String id, String name, String bDate, String email) {
+	
+};
 
 @WebMvcTest
 class CarsControllerTest {
@@ -46,15 +50,29 @@ class CarsControllerTest {
 	@Autowired
 	MockMvc mockMvc;
 	CarDto carDto = new CarDto(CAR_NUMBER, "Model");
+	CarDto carDtoMissingFields = new CarDto(null, null);
 	@Autowired
 	ObjectMapper mapper;
 	PersonDto personDto = new PersonDto(PERSON_ID, "ts", "1970-01-11", "s@sm.se");
 	PersonDto testPersonDto = new PersonDto(1234566l, "PersonName", "1970-11-11", "serega@gmail.com");
 	PersonDto personDtoUpdated = new PersonDto(10000000l, "ts", "1970-01-11", "s@gmail.com");
 	PersonDto personWrongEmail = new PersonDto(PERSON_ID, "ts", "1970-01-11", "s@gmail.");
+	PersonDtoIdString personWrongId = new PersonDtoIdString ("abc", "victim", "1970-01-11", "s@gmail.com");
 	TradeDealDto dealDto = new TradeDealDto(CAR_NUMBER, 123456l);
 	List<CarDto> listCarDtos = new ArrayList<CarDto>();
-	
+	TradeDealDto tradeDealWrongId = new TradeDealDto(CAR_NUMBER, -10l);
+	TradeDealDto tradeDealAllFieldsMissing = new TradeDealDto(null,null);
+	PersonDto personAllFieldsMissing = new PersonDto(null, null, null, null);
+	private String[] expectedCarMissingFieldsMessages = {
+			MISSING_CAR_MODEL_MESSAGE,
+			MISSING_CAR_NUMBER_MESSAGE
+	};
+	private String[] expectedPersonMissingFieldsMessages = {
+		MISSING_BD,
+		MISSING_NAME,
+		MISSING_PERSON_ID,
+		EMAIL_EMPTY
+	};
 	
 	@Test
 	void testAddCar() throws Exception {
@@ -215,5 +233,41 @@ class CarsControllerTest {
 		String actualJsonString = mockMvc.perform(delete(BASE_URL  + "/" +  WRONG_CAR_NUMBER)).andExpect(status().isBadRequest()).andReturn().getResponse()
 				.getContentAsString();
 		assertEquals(WRONG_NUMBER_MESSAGE,actualJsonString);
+	}
+	
+	@Test
+	void addPersonWrongIdTypeTest() throws Exception {
+		wrongPersonDataRequest(personWrongId, CarsExceptionsController.JSON_TYPE_MISMATCH_MESSAGE);
+	}
+	
+	private void wrongPersonDataRequest(Object personDtoWrongData, String expectedMessage) throws  Exception {
+		String jsonPersonDto = mapper.writeValueAsString(personDtoWrongData); //conversion from carDto object to string JSON
+		String actualJson = mockMvc.perform(post(BASE_URL + "/person").contentType(MediaType.APPLICATION_JSON)
+				.content(jsonPersonDto)).andExpect(status().isBadRequest()).andReturn().getResponse()
+				.getContentAsString();
+		assertEquals(expectedMessage, actualJson);
+	}
+	
+	@Test
+	void addCarMissingFields() throws Exception {
+		String jsonCarDto = mapper.writeValueAsString(carDtoMissingFields); //conversion from carDto object to string JSON
+		String response = mockMvc.perform(post("http://localhost:8080/cars").contentType(MediaType.APPLICATION_JSON)
+				.content(jsonCarDto)).andExpect(status().isBadRequest()).andReturn().getResponse()
+		.getContentAsString();
+		allFieldsMissingTest(expectedCarMissingFieldsMessages , response);
+	}
+	@Test
+	void addPersonMissingFields() throws Exception {
+		String jsonPersonDto = mapper.writeValueAsString(personAllFieldsMissing); //conversion from carDto object to string JSON
+		String response = mockMvc.perform(post("http://localhost:8080/cars/person").contentType(MediaType.APPLICATION_JSON)
+				.content(jsonPersonDto)).andExpect(status().isBadRequest())
+				.andReturn().getResponse().getContentAsString();
+		allFieldsMissingTest(expectedPersonMissingFieldsMessages , response);
+	}
+	private void allFieldsMissingTest(String [] expectedMessages, String response) {
+		Arrays.sort(expectedMessages);
+		String [] actualMessages = response.split(";");
+		Arrays.sort(actualMessages);
+		assertArrayEquals(expectedMessages, actualMessages);
 	}
 }

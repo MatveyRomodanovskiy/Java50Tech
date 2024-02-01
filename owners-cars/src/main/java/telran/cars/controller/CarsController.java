@@ -21,29 +21,36 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import telran.cars.service.CarsService;
 import telran.cars.dto.*;
+import telran.cars.exceptions.controller.CarsExceptionsController;
 
 @RestController
 @RequestMapping("cars")
 @RequiredArgsConstructor
+@Slf4j
 public class CarsController {
 	final CarsService carsService;
 	@PostMapping
 	CarDto addCar(@RequestBody @Valid CarDto carDto) {
+		log.debug("addCar: received car data: {}", carDto);
 		//annotation @RequstBody informs Spring about conversion of JSON inside a request to the given parameter
 		return carsService.addCar(carDto);
 	}
 	@PostMapping("person")
 	PersonDto addPerson(@RequestBody @Valid PersonDto personDto) {
+		log.debug("addPerson: received personData data: {}", personDto);
 		return carsService.addPerson(personDto);
 	}
 	@PutMapping("person")
 	PersonDto updatePerson(@RequestBody @Valid PersonDto personDto) {
+		log.debug("updatePerson: received personData data: {}", personDto);
 		return carsService.updatePerson(personDto);
 	}
 	@PutMapping("trade")
 	TradeDealDto purchase(@RequestBody @Valid TradeDealDto tradeDealDto) {
+		log.debug("purchase: received trade deal data: {}", tradeDealDto);
 		return carsService.purchase(tradeDealDto);
 	}
 	@DeleteMapping("person/{id}")
@@ -54,20 +61,31 @@ public class CarsController {
 //		} catch (Exception e) {
 //			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "person not found message", null);
 //		}
+		log.debug("delete person: person with ID {}", id);
 		return carsService.deletePerson(id);
 	}
 	@DeleteMapping("{carNumber}")
 	CarDto deleteCar(@PathVariable(name="carNumber") @NotEmpty (message = MISSING_CAR_NUMBER_MESSAGE) @Pattern(regexp = CAR_NUMBER_REGEXP, message = WRONG_NUMBER_MESSAGE) String carNumber) {
+		log.debug("delete car: car with number {}", carNumber);
 		return carsService.deleteCar(carNumber);
 		
 	}
 	@GetMapping("person/{id}")
 	List<CarDto> getOwnerCars(@PathVariable @NotNull(message = MISSING_PERSON_ID) @Min(value = MIN_PERSON_ID_NUMBER, message = WRONG_ID_NUMBER_MIN) 
 	@Max(value = MAX_PERSON_ID_NUMBER, message = WRONG_ID_NUMBER_MAX) long id) {
-		return carsService.getOwnerCars(id);
+		List<CarDto> res = carsService.getOwnerCars(id);
+		if(res.isEmpty()) {
+			log.warn("getOwnerCars: no cars for person with id {}", id );
+		}
+		else {
+			log.trace("getOwnerCars: cars of person with id {} {}", id, res);
+		}
+		return res;
 	}
 	@GetMapping("{carNumber}")
 	PersonDto getCarOwner(@PathVariable @NotEmpty (message = MISSING_CAR_NUMBER_MESSAGE) @Pattern(regexp = CAR_NUMBER_REGEXP, message = WRONG_NUMBER_MESSAGE) String carNumber) {
+		
+		log.debug("getCarOwner: received car number {}", carNumber);
 		return carsService.getCarOwner(carNumber);
 	}
 }
