@@ -1,20 +1,3 @@
-//package telran.cars.service;
-//
-//import java.util.List;
-//
-//import telran.cars.dto.*;
-//
-//public interface CarsService {
-//
-//	PersonDto addPerson(PersonDto   personDTO);
-//	CarDto addCar(CarDto carDTO);
-//	PersonDto   updatePerson(PersonDto   personDTO);
-//	PersonDto   deletePerson(long id);
-//	CarDto deleteCar(String carNumber);
-//	TradeDealDto purchase (TradeDealDto tradeDeal);
-//	List<CarDto> getOwnerCars(long id);
-//	PersonDto   getCarOwner(String carNumber);
-//}
 package telran.cars.service;
 
 import java.util.List;
@@ -24,6 +7,7 @@ import telran.cars.dto.*;
 public interface CarsService {
 PersonDto addPerson(PersonDto personDto);
 CarDto addCar(CarDto carDto);
+ModelDto addModel(ModelDto modelDto);
 PersonDto updatePerson(PersonDto personDto);
 PersonDto deletePerson(long id);
 CarDto deleteCar(String carNumber);
