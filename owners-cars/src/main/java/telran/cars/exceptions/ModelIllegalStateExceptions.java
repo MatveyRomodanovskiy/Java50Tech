@@ -1,7 +1,8 @@
-package telran.cars;
+package telran.cars.exceptions;
 
 import telran.cars.api.ServiceExceptionMessages;
 
+@SuppressWarnings("serial")
 public class ModelIllegalStateExceptions extends IllegalStateException {
 
 	public ModelIllegalStateExceptions() {

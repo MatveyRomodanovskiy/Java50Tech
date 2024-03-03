@@ -10,12 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import telran.cars.dto.*;
-import telran.cars.exceptions.CarNotFoundException;
-import telran.cars.exceptions.IllegalCarsStateExeptions;
-import telran.cars.exceptions.IllegalPersonsStateExceptions;
-import telran.cars.exceptions.ModelNotFoundExceptions;
-import telran.cars.exceptions.PersonNotFoundExeption;
-import telran.cars.exceptions.TradeDealIllegalStateException;
+import telran.cars.exceptions.*;
 import telran.cars.repo.*;
 import telran.cars.service.model.Car;
 import telran.cars.service.model.CarOwner;
@@ -63,7 +58,7 @@ public class CarsServiceImpl implements CarsService {
 	@Transactional
 	public PersonDto updatePerson(PersonDto personDto) {
 		CarOwner carOwner = carOwnerRepo.findById(personDto.id())
-				.orElseThrow(()-> new PersonNotFoundExeption());
+				.orElseThrow(()-> new PersonNotFoundException());
 		carOwner.setEmail(personDto.email());
 		log.debug("person email {} has been saved", personDto);
 		return personDto;
@@ -72,15 +67,31 @@ public class CarsServiceImpl implements CarsService {
 	@Override
 	@Transactional
 	public PersonDto deletePerson(long id) {
-		// TODO Auto-generated method stub HW63
-		return null;
+		CarOwner victim = carOwnerRepo.findById(id)
+				.orElseThrow(() -> new PersonNotFoundException());
+		List <Car> victimCars = carRepo.findByCarOwnerId(id);
+		if (!victimCars.isEmpty()) {
+			victimCars.forEach(c -> c.setCarOwner(null));
+		}
+		List<TradeDeal> victimDeals = tradeDealRepo.findByCarOwnerId(id);
+		if (!victimDeals.isEmpty()) {
+			victimDeals.forEach(d-> tradeDealRepo.delete(d));
+		}
+		carOwnerRepo.delete(victim);
+		return victim.build();
 	}
 
 	@Override
 	@Transactional
 	public CarDto deleteCar(String carNumber) {
-		// TODO Auto-generated method stub HW63
-		return null;
+		Car victimCar = carRepo.findById(carNumber)
+				.orElseThrow(()-> new CarNotFoundException());
+		List<TradeDeal> victimDeals = tradeDealRepo.findByCarNumber(carNumber);
+		if (!victimDeals.isEmpty()) {
+			victimDeals.forEach(d-> tradeDealRepo.delete(d));
+		}
+		carRepo.delete(victimCar);
+		return victimCar.build();
 	}
 
 	@Override
@@ -91,7 +102,7 @@ public class CarsServiceImpl implements CarsService {
 		Long personId = tradeDeal.personId();
 		if (personId != null) {
 			carOwner = carOwnerRepo.findById(personId)
-					.orElseThrow(() -> new PersonNotFoundExeption());
+					.orElseThrow(() -> new PersonNotFoundException());
 			if (car.getCarOwner().getId() == personId) {
 				throw new TradeDealIllegalStateException();
 			}
@@ -123,8 +134,12 @@ public class CarsServiceImpl implements CarsService {
 
 	@Override
 	public ModelDto addModel(ModelDto modelDto) {
-		// TODO Auto-generated method stub HW63
-		return null;
+		Model newModel = Model.of(modelDto);
+		if (modelRepo.existsById(newModel.getModelYear())) {
+			throw new ModelIllegalStateExceptions();
+		}
+		modelRepo.save(newModel);
+		return modelDto;
 	}
 
 }

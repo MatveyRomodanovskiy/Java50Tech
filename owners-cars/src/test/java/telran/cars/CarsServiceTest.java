@@ -76,7 +76,6 @@ class CarsServiceTest {
 	}
 	
 	@Test
-	@Disabled
 	void testAddPerson() {
 		assertEquals(personDto, carsService.addPerson(personDto));
 		assertThrowsExactly(IllegalPersonsStateExceptions.class,
@@ -84,7 +83,6 @@ class CarsServiceTest {
 	}
 
 	@Test
-	@Disabled
 	void testAddCar() {
 		assertEquals(car4, carsService.addCar(car4));
 		CarDto carNoModel = new CarDto("11111111111", MODEL1, 2018, "green", 100000, CarState.OLD);
@@ -106,23 +104,19 @@ class CarsServiceTest {
 		PersonDto personUpdated = new PersonDto(PERSON_ID_1, NAME1, BIRTH_DATE_1, NEW_EMAIL);
 		assertEquals(personUpdated, carsService.updatePerson(personUpdated));
 		assertEquals(NEW_EMAIL, carOwnerRepo.findById(PERSON_ID_1).get().getEmail());
-		assertThrowsExactly(PersonNotFoundExeption.class,
+		assertThrowsExactly(PersonNotFoundException.class,
 				() -> carsService.updatePerson(personDto));
 	}
 
 	@Test
-	@Disabled
 	void testDeletePerson() {
-		
 		assertEquals(personDto1, carsService.deletePerson(PERSON_ID_1));
-		assertThrowsExactly(PersonNotFoundExeption.class, () -> carsService.deletePerson(PERSON_ID_1));
+		assertThrowsExactly(PersonNotFoundException.class, () -> carsService.deletePerson(PERSON_ID_1));
 		
 	}
 
 	@Test
-	@Disabled
-	void testDeleteCar() {
-		
+	void testDeleteCar() {	
 		assertEquals(car1, carsService.deleteCar(CAR_NUMBER_1));
 		assertThrowsExactly(CarNotFoundException.class, () -> carsService.deleteCar(CAR_NUMBER_1));
 		
@@ -144,12 +138,11 @@ class CarsServiceTest {
 		
 	}
 	@Test
-	@Disabled
 	void testPurchaseNotFound() {
 		TradeDealDto tradeDealCarNotFound = new TradeDealDto(CAR_NUMBER_4, PERSON_ID_1, DATE_TRADE_DEAL_1);
 		TradeDealDto tradeDealOwnerNotFound = new TradeDealDto(CAR_NUMBER_1,
 				PERSON_ID_NOT_EXISTS, DATE_TRADE_DEAL_1);
-		assertThrowsExactly(PersonNotFoundExeption.class, () -> carsService.purchase(tradeDealOwnerNotFound));
+		assertThrowsExactly(PersonNotFoundException.class, () -> carsService.purchase(tradeDealOwnerNotFound));
 		assertThrowsExactly(CarNotFoundException.class, () -> carsService.purchase(tradeDealCarNotFound));
 		
 	}
@@ -166,7 +159,6 @@ class CarsServiceTest {
 		assertEquals(DATE_TRADE_DEAL_1, tradeDeal.getDate().toString());
 	}
 	@Test
-	@Disabled
 	void testPurchaseSameOwner() {
 		TradeDealDto tradeDeal = new TradeDealDto(CAR_NUMBER_1,PERSON_ID_1, null);
 		assertThrowsExactly(TradeDealIllegalStateException.class,
