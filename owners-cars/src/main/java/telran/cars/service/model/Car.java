@@ -28,7 +28,7 @@ public class Car {
 	@ManyToOne
 	@JoinColumn(name="owner_id", nullable=true)
 	@Setter
-	
+	@OnDelete(action = OnDeleteAction.SET_NULL)
 	CarOwner carOwner;
 	String color;
 	@Setter

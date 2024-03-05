@@ -69,14 +69,7 @@ public class CarsServiceImpl implements CarsService {
 	public PersonDto deletePerson(long id) {
 		CarOwner victim = carOwnerRepo.findById(id)
 				.orElseThrow(() -> new PersonNotFoundException());
-		List <Car> victimCars = carRepo.findByCarOwnerId(id);
-		if (!victimCars.isEmpty()) {
-			victimCars.forEach(c -> c.setCarOwner(null));
-		}
-		List<TradeDeal> victimDeals = tradeDealRepo.findByCarOwnerId(id);
-		if (!victimDeals.isEmpty()) {
-			victimDeals.forEach(d-> tradeDealRepo.delete(d));
-		}
+		
 		carOwnerRepo.delete(victim);
 		return victim.build();
 	}
