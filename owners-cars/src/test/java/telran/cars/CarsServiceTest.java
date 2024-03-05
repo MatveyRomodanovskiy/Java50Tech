@@ -20,6 +20,7 @@ import telran.cars.dto.*;
 import telran.cars.exceptions.*;
 import telran.cars.repo.*;
 import telran.cars.service.CarsService;
+import telran.cars.service.model.CarOwner;
 import telran.cars.service.model.ModelYear;
 import telran.cars.service.model.TradeDeal;
 
@@ -80,6 +81,9 @@ class CarsServiceTest {
 		assertEquals(personDto, carsService.addPerson(personDto));
 		assertThrowsExactly(IllegalPersonsStateExceptions.class,
 				()->carsService.addPerson(personDto));
+		CarOwner carOwner = carOwnerRepo.findById(personDto.id())
+				.orElse(null);
+		assertEquals(personDto, carOwner.build());
 	}
 
 	@Test
@@ -106,6 +110,7 @@ class CarsServiceTest {
 		assertEquals(NEW_EMAIL, carOwnerRepo.findById(PERSON_ID_1).get().getEmail());
 		assertThrowsExactly(PersonNotFoundException.class,
 				() -> carsService.updatePerson(personDto));
+		
 	}
 
 	@Test
@@ -123,7 +128,6 @@ class CarsServiceTest {
 	}
 
 	@Test
-	@Disabled
 	void testPurchaseNewCarOwner() {
 		int countDeals = (int)tradeDealRepo.count(); 
 		TradeDealDto tradeDealDto = new TradeDealDto(CAR_NUMBER_1, PERSON_ID_2, DATE_TRADE_DEAL_1);
@@ -137,6 +141,23 @@ class CarsServiceTest {
 		
 		
 	}
+	
+	@Test
+	void testPurchaseNewCarOwnerWithoutOldOwner() {
+		int countDeals = (int)tradeDealRepo.count();
+		carsService.addCar(car4);
+		TradeDealDto tradeDealDto = new TradeDealDto(CAR_NUMBER_4, PERSON_ID_2, DATE_TRADE_DEAL_1);
+		assertEquals(tradeDealDto, carsService.purchase(tradeDealDto));
+		assertEquals(PERSON_ID_2, carRepo.findById(CAR_NUMBER_4).get().getCarOwner().getId());
+		TradeDeal tradeDeal = tradeDealRepo.findAll().get(countDeals);
+		assertEquals(CAR_NUMBER_4, tradeDeal.getCar().getNumber());
+		assertEquals(PERSON_ID_2, tradeDeal.getCarOwner().getId());
+		assertEquals(DATE_TRADE_DEAL_1, tradeDeal.getDate().toString());
+		
+		
+		
+	}
+	
 	@Test
 	void testPurchaseNotFound() {
 		TradeDealDto tradeDealCarNotFound = new TradeDealDto(CAR_NUMBER_4, PERSON_ID_1, DATE_TRADE_DEAL_1);
@@ -147,7 +168,6 @@ class CarsServiceTest {
 		
 	}
 	@Test
-	@Disabled
 	void testPurchaseNoCarOwner() {
 		int countDeals = (int)tradeDealRepo.count(); 
 		TradeDealDto tradeDealDto = new TradeDealDto(CAR_NUMBER_1,null, DATE_TRADE_DEAL_1);
@@ -160,9 +180,18 @@ class CarsServiceTest {
 	}
 	@Test
 	void testPurchaseSameOwner() {
-		TradeDealDto tradeDeal = new TradeDealDto(CAR_NUMBER_1,PERSON_ID_1, null);
+		TradeDealDto tradeDeal = new TradeDealDto(CAR_NUMBER_1,PERSON_ID_1, DATE_TRADE_DEAL_1);
 		assertThrowsExactly(TradeDealIllegalStateException.class,
 				() -> carsService.purchase(tradeDeal));
+	}
+	
+	@Test
+	void testPurchaseOldAndNewOwnersIsNull() {
+		TradeDealDto tradeDeal = new TradeDealDto(CAR_NUMBER_1,null, DATE_TRADE_DEAL_1);
+		carsService.purchase(tradeDeal);
+		TradeDealDto tradeDeal2 = new TradeDealDto(CAR_NUMBER_1,null, DATE_TRADE_DEAL_1);
+		assertThrowsExactly(TradeDealIllegalStateException.class,
+				() -> carsService.purchase(tradeDeal2));
 	}
 
 	@Test

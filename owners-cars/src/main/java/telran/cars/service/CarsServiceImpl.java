@@ -94,26 +94,37 @@ public class CarsServiceImpl implements CarsService {
 		return victimCar.build();
 	}
 
+
+
 	@Override
-	public TradeDealDto purchase(TradeDealDto tradeDeal) {
-		Car car = carRepo.findById(tradeDeal.carNumber())
+	@Transactional
+	public TradeDealDto purchase(TradeDealDto tradeDealDto) {
+		Car car = carRepo.findById(tradeDealDto.carNumber())
 				.orElseThrow(() -> new CarNotFoundException());
 		CarOwner carOwner = null;
-		Long personId = tradeDeal.personId();
-		if (personId != null) {
+		Long personId = tradeDealDto.personId();
+		if ( personId != null) {
+			log.debug("ID of new car's owner is {}", personId);
 			carOwner = carOwnerRepo.findById(personId)
 					.orElseThrow(() -> new PersonNotFoundException());
-			if (car.getCarOwner().getId() == personId) {
-				throw new TradeDealIllegalStateException();
-			}
+			
 		}
-		TradeDeal tradeDealEnt = new TradeDeal();
-		tradeDealEnt.setCar(car);
-		tradeDealEnt.setCarOwner(carOwner);
-		tradeDealEnt.setDate(LocalDate.parse(tradeDeal.date()));
-		return tradeDeal;
+				if ((car.getCarOwner()!=null && car.getCarOwner().getId() == personId) || (car.getCarOwner()== null && personId == null)) {
+					throw new TradeDealIllegalStateException();
+				 
+			}
+		
+		TradeDeal tradeDeal = new TradeDeal();
+		tradeDeal.setCar(car);
+		tradeDeal.setCarOwner(carOwner);
+		tradeDeal.setDate(LocalDate.parse(tradeDealDto.date()));
+		car.setCarOwner(carOwner);
+		tradeDealRepo.save(tradeDeal);
+		log.debug("trade: {} has been saved", tradeDealDto);
+		return tradeDealDto;
 	}
 
+	
 	@Override
 	public List<CarDto> getOwnerCars(long id) {
 		// TODO Auto-generated method stub
