@@ -12,8 +12,8 @@ import telran.cars.service.model.*;
 public interface ModelRepo extends JpaRepository<Model, ModelYear> {
 
 	@Query("""
-			select model.modelYear.name from Car as car join TradeDeal as td on car.number = td.car.number group by model.modelYear.name having count(*) = 
-			(select max(count) from (select count(*) as count from Car as car1 join TradeDeal as td1 on car1.number = td1.car.number group by model.modelYear.name))""" )
+			select td.car.model.modelYear.name from TradeDeal as td group by td.car.model.modelYear.name having count(*) = 
+			(select max(count) from (select count(*) as count from TradeDeal as td1 group by td1.car.model.modelYear.name))""" )
 		List<String> findMostSoldModelNames();
 	
 	@Query("""
