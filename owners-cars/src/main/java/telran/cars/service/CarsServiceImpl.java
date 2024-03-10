@@ -2,11 +2,14 @@ package telran.cars.service;
 
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import telran.cars.dto.*;
@@ -26,6 +29,7 @@ public class CarsServiceImpl implements CarsService {
 	final CarOwnerRepo carOwnerRepo;
 	final ModelRepo modelRepo;
 	final TradeDealRepo tradeDealRepo;
+	final EntityManager em;
 	
 	@Override
 	@Transactional
@@ -222,5 +226,39 @@ public class CarsServiceImpl implements CarsService {
 		return res;
 	}
 
+	@Override
+	public List<String> anyQuery(QueryDto queryDto) {
+		try {
+			Query query = queryDto.type() == QueryType.JPQL ?
+					em.createQuery(queryDto.query()) : em.createNativeQuery(queryDto.query());
+			List<String> res = getResult(query);
+			log.debug("Query result: {}", res);
+			return res;
+		} catch (Throwable e) {
+			throw new IllegalArgumentException(e.getMessage());
+		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private List<String> getResult(Query query) {
+		List resultList = query.getResultList();
+		List<String> res = Collections.emptyList();
+		if (!resultList.isEmpty()) {
+			res = resultList.get(0).getClass().isArray() ?
+			multiColumnsProjection((List<Object[]>)resultList) : singleColumnsProjection(resultList);
+		}
+		log.debug("result: {}", res);
+		return res;
+	}
+
+	private List<String> singleColumnsProjection(List<Object> resultList) {
+		
+		return resultList.stream().map(Object::toString).toList();
+	}
+
+	private List<String> multiColumnsProjection(List<Object[]> resultList) {
+		
+		return resultList.stream().map(Arrays::deepToString).toList();
+	}
 
 }

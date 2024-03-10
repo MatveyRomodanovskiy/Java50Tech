@@ -36,6 +36,8 @@ public class Car {
 	@Enumerated(EnumType.STRING) // value in the table will be a string (by default a number)
 	@Column(name = "car_state")
 	CarState state;
+	
+	
 	public Car(String number, String color, Integer kilometers, CarState state) {
 		super();
 		this.number = number;
@@ -49,6 +51,11 @@ public class Car {
 	}
 	public CarDto build() {
 		return new CarDto(number, model.modelYear.getName(), model.modelYear.getYear(), color, kilometers, state);
+	}
+
+	@Override
+	public String toString() {
+		return "Car [number=" + number + ", color=" + color + ", kilometers=" + kilometers + ", state=" + state + "]";
 	}
 
 	

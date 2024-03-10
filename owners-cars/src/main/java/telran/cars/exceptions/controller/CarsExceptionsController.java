@@ -28,8 +28,8 @@ private ResponseEntity<String> returnResponse(String message, HttpStatus status)
 	log.error(message);
 	return new ResponseEntity<String>(message, status);
 }
-@ExceptionHandler(IllegalStateException.class)
-ResponseEntity<String> badRequestHandler(IllegalStateException e) {
+@ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
+ResponseEntity<String> badRequestHandler(RuntimeException e) {
 	return returnResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
 }
 @ExceptionHandler(MethodArgumentNotValidException.class)

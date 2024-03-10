@@ -85,4 +85,11 @@ public class CarsController {
 		log.debug("getCarOwner: received car number {}", carNumber);
 		return carsService.getCarOwner(carNumber);
 	}
+	
+	@PostMapping("query")
+	List<String> getQueryResult(@RequestBody QueryDto queryDto) {
+		return carsService.anyQuery(queryDto);
+	}
+	
+	
 }
