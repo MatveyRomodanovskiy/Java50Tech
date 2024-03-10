@@ -20,8 +20,8 @@ public interface ModelRepo extends JpaRepository<Model, ModelYear> {
 			select model.modelYear.name as name, count(*) as amount from Car as cars group by model.modelYear.name order by count(*) desc limit :nModels""")
 	List<ModelNameAmount> findMostPopularModelNames(int nModels);
 	@Query("""
-			select car.model.modelYear.name as name, count(*) as amount from CarOwner co join Car car on car.carOwner.id = co.id
-			where co.birthDate between :birthDate1 and :birthDate2 GROUP BY car.model.modelYear.name order by count(*) desc limit :nModels
+			select model.modelYear.name as name, count(*) as amount from Car 
+			where carOwner.birthDate between :birthDate1 and :birthDate2 GROUP BY model.modelYear.name order by count(*) desc limit :nModels
 			""")
 	List<ModelNameAmount> findPopularModelNameOwnerAges(int nModels,
 			LocalDate birthDate1, LocalDate birthDate2);
